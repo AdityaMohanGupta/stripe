@@ -10,7 +10,7 @@ app.use(express.json());
 
 app.set('view engine' , 'ejs');
 app.set('views' , path.join(__dirname , 'views'));
-
+app.set('trust proxy', true);
 app.use(express.static(path.join(__dirname , 'public')))
 
 // Serve the index.html when the root URL is visited
@@ -22,6 +22,8 @@ app.get('/', (req, res) => {
 // Route to create checkout session
 app.post('/create-checkout-session', async (req, res) => {
     try {
+        // Dynamically construct the base URL
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
             mode: 'payment',
@@ -37,8 +39,9 @@ app.post('/create-checkout-session', async (req, res) => {
                     quantity: 1,
                 },
             ],
-            success_url: 'https://localhost:4242/success',
-            cancel_url: 'https://localhost:4242/cancel',
+            success_url: `${baseUrl}`, // Dynamically generated success URL
+            cancel_url: `${baseUrl}`,  // Dynamically generated cancel URL
+
         });
         res.json({ id: session.id });
     } catch (error) {
