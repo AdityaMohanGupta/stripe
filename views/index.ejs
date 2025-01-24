@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stripe Checkout Example</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-8 rounded-xl shadow-lg text-center max-w-md w-full">
+        <h1 class="text-3xl font-bold mb-6 text-gray-800">Welcome to the Stripe</h1>
+        <button id="checkout-button" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-400">
+            Checkout
+        </button>
+    </div>
+
+    <script>
+        const stripePublicKey = "<%= stripePublicKey %>";
+        const checkoutButton = document.getElementById('checkout-button');
+
+        checkoutButton.addEventListener('click', () => {
+            // Make a request to the backend to create a Stripe checkout session
+            fetch('/create-checkout-session', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then((response) => response.json())
+            .then((sessionId) => {
+                // Redirect to the Stripe Checkout page using the session ID
+                return Stripe(stripePublicKey).redirectToCheckout({ sessionId: sessionId.id });
+            })
+            .then((result) => {
+                if (result.error) {
+                    alert(result.error.message);
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+
+    <!-- Include Stripe.js -->
+    <script src="https://js.stripe.com/v3/"></script>
+</body>
+</html>
